@@ -1,3 +1,6 @@
 [submodule "hello-world/tools/rtems_waf"]
 	path = hello-world/tools/rtems_waf
 	url = git://git.rtems.org/rtems_waf.git
+[submodule "blink/tools/rtems_waf"]
+	path = blink/tools/rtems_waf
+	url = git://git.rtems.org/rtems_waf.git
