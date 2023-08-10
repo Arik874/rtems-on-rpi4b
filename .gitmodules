@@ -4,3 +4,6 @@
 [submodule "blink/tools/rtems_waf"]
 	path = blink/tools/rtems_waf
 	url = git://git.rtems.org/rtems_waf.git
+[submodule "hardware-info/tools/rtems_waf"]
+	path = hardware-info/tools/rtems_waf
+	url = git://git.rtems.org/rtems_waf.git
