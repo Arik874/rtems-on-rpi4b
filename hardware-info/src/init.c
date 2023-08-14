@@ -1,4 +1,7 @@
+#include <bsp/mbox/property/tags.h>
 #include <rtems.h>
+#include <rtems/rtems/cache.h>
+#include <rtems/score/basedefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,6 +14,7 @@
 
 // Initialize the classic API tasks table
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
+#include <bsp/linker-symbols.h>
 
 // Initialize configuration defaults
 #define CONFIGURE_INIT
@@ -19,19 +23,25 @@
 #include <bsp/mbox/property/tags/hardware.h>
 #include <rtems/confdefs.h>
 
-static MBOX_PROPERTY_MESSAGE_BUFFER(buffer, 30);
-
 rtems_task Init(rtems_task_argument ignored) {
-#define TAGS(X, ...) X(HARDWARE_GET_CLOCKS_TAG, a, __VA_ARGS__)
-    MBOX_PROPERTY_MESSAGE_BUFFER_INIT(mbox_buffer, TAGS, buffer);
+    mbox_property_tag_metadata tag_metadata[] = {
+        HARDWARE_GET_BOARD_MAC_ADDRESS_TAG,
+    };
 
-    mbox_write(PROPERTY_TAGS_ARM_TO_VC, mbox_buffer);
+    mbox_property_message* message = mbox_property_message_new(40);
+    mbox_property_message_init(message, 40, tag_metadata,
+                               RTEMS_ARRAY_SIZE(tag_metadata));
+
+    mbox_write(PROPERTY_TAGS_ARM_TO_VC, message);
     (void)mbox_read(PROPERTY_TAGS_ARM_TO_VC);
 
+    mbox_property_tag* clocks = (mbox_property_tag*)message->buffer;
+    hardware_get_board_mac_address_tag_buffer* buf =
+        (hardware_get_board_mac_address_tag_buffer*)clocks->buffer;
     for (unsigned int i = 0;
-         i <
-         RTEMS_ARRAY_SIZE(MBOX_PROPERTY_TAG_RESPONSE(mbox_buffer, a).clocks);
-         i++)
-        printf("%d\n", MBOX_PROPERTY_TAG_RESPONSE(mbox_buffer, a).clocks[i].id);
+         i < RTEMS_ARRAY_SIZE(buf->response.board_mac_address); i++)
+        printf("mac[%u] = %hu\n", i, buf->response.board_mac_address[i]);
+
+    mbox_property_message_destroy(message);
     exit(0);
 }
